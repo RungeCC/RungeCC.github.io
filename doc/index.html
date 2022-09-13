@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Runge&#39;s Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Runge&#39;s Notes">
+<meta property="og:url" content="http://rungecc.github.io/index.html">
+<meta property="og:site_name" content="Runge&#39;s Notes">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="Runge">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Runge's Notes" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Runge&#39;s Notes</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://RungeCC.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-cpp23" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/09/12/cpp23/" class="article-date">
+  <time class="dt-published" datetime="2022-09-12T11:42:39.000Z" itemprop="datePublished">2022-09-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/09/12/cpp23/">C++ 23</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="assume"><a href="#assume" class="headerlink" title="assume"></a>assume</h2><p>assume 是一个 expression-liked 属性，语法形如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[<span class="built_in">assume</span>(expr)]]</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>expr</code> 具有 <code>bool</code> 类型，这段代码用来告诉优化器存在形如 <code>expr</code> 的约束不变式以资参考，例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">do_something</span><span class="params">(<span class="type">int</span> var)</span> </span>&#123;</span><br><span class="line">  [[<span class="built_in">assume</span>(var &gt; <span class="number">0</span>)]];</span><br><span class="line">  <span class="keyword">if</span> (var &lt;= <span class="number">0</span> ) <span class="built_in">do_1</span>();</span><br><span class="line">  <span class="keyword">else</span> <span class="built_in">do_2</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种情况下，优化器将优化掉不可能进入的分支，同时，如果 <code>assume</code> 被违背将导致未定义行为。</p>
+<p><code>assume</code> 表达式（用来指代 <code>expr</code>）具有下面的特点：</p>
+<ul>
+<li>不求值；</li>
+<li>要求 ODR 使用。</li>
+</ul>
+<h2 id="static-operator"><a href="#static-operator" class="headerlink" title="static operator()"></a>static <code>operator()</code></h2><p>这个提案允许成员运算符 <code>operator()</code> 被声明为静态的，避免毫无意义的 <code>this</code> 指针传递的开销：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="type">static</span> <span class="keyword">constexpr</span> <span class="type">bool</span> <span class="title">operator</span><span class="params">()</span><span class="params">(T <span class="type">const</span>&amp; val)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// some expr...</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这样做是有意义的，因为 C++ 存在大量用只有定义了 <code>operator()</code> 的类传递函数对象，例如：<code>std::less</code> 类模板。</p>
+<p>同样，现在允许用 <code>static</code> 修饰 lambda，这种情况下不允许捕捉。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> lmd = []&lt;<span class="keyword">class</span> T&gt;(T <span class="type">const</span>&amp; val) <span class="type">static</span> -&gt; <span class="type">bool</span> &#123; </span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>; </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Deducing-this"><a href="#Deducing-this" class="headerlink" title="Deducing this"></a>Deducing <code>this</code></h2><p>这个提案允许显示的指定成员函数的第一个参数（<code>this</code> 指针）的类型，按照如下语法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">SomeType</span>, <span class="keyword">class</span>...OtherTypes&gt;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(<span class="keyword">this</span> SomeType self, OtherTypes...args)</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这有一个明显的优点，过去，如果要准备完美转发的成员函数调用需要写全部的四个重载：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">do_something</span><span class="params">()</span> &amp;</span>;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">do_something</span><span class="params">()</span> &amp;&amp;</span>;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">do_something</span><span class="params">()</span> <span class="type">const</span>&amp;</span>;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">do_something</span><span class="params">()</span> <span class="type">const</span>&amp;&amp;</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这样繁琐的事情现在只需要通过简单的模板 <code>this</code> 参数来实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Self</span>&gt;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">do_something</span><span class="params">(<span class="keyword">this</span> Self&amp;&amp; self)</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>还允许获取 lambda 函数自身的引用，这就意味着可以写递归 lambda：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> lmd = [](<span class="keyword">this</span> <span class="keyword">auto</span>&amp; self, <span class="type">int</span> n) &#123;</span><br><span class="line">  <span class="keyword">return</span> n == <span class="number">0</span> ? <span class="number">1</span> : n * <span class="built_in">self</span>(n - <span class="number">1</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这点不难理解，使用<a target="_blank" rel="noopener" href="https://cppinsights.io/">C++ Insights</a>可以知道 lambda 会被当作一个重载了 <code>operator()</code> 的匿名类的对象，他的调用相当于 <code>operator()</code> 的调用。</p>
+<h2 id="std-module"><a href="#std-module" class="headerlink" title="std module"></a>std module</h2><p>对标准库提供最低限度的模块支持。</p>
+<p>C++ 20 最为重要的四个特性（Coroutine, Concept, Range, Module）之一就是模块，他彻底改变了 C++ 的编译-依赖样式（以至于 cmake 暂时不支持 module，<a target="_blank" rel="noopener" href="https://gitlab.kitware.com/cmake/cmake/-/issues/18355">issue#18355</a>），但是标准库都缺乏 module，以至于这个特性很难入其他三大特性一样得到很好的利用。</p>
+<p>BS 提议加入 <code>import std</code> 和 <code>import std.compact</code>，前者引入所有 <code>::std</code> 的公开符号，后者是兼容性的，他引入的 C 函数在全局名字空间中（因为，显然，很多代码使用的是 <code>fopen</code> 而并非 <code>std::fopen</code>）。</p>
+<p>注意，std module 不会导出任何宏，这意味着：</p>
+<ul>
+<li>如果需要特性测试宏，需要 <code>import &lt;versions&gt;</code>；</li>
+<li>如果需要 C 风格的宏函数，则要引入对应的头文件；</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rungecc.github.io/2022/09/12/cpp23/" data-id="cl7zuzhs80000t6fme871gqez" data-title="C++ 23" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-index" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/09/12/index/" class="article-date">
+  <time class="dt-published" datetime="2022-09-12T11:42:10.855Z" itemprop="datePublished">2022-09-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rungecc.github.io/2022/09/12/index/" data-id="cl7zuzhsb0001t6fm8ym1cpz1" data-title="" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C++</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/09/12/cpp23/">C++ 23</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/12/index/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2022 Runge<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
