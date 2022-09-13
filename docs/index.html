@@ -71,6 +71,74 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-create-remote-drill-bug" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/09/14/create-remote-drill-bug/" class="article-date">
+  <time class="dt-published" datetime="2022-09-13T16:20:40.000Z" itemprop="datePublished">2022-09-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/09/14/create-remote-drill-bug/">机械动力远程钻头</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="提要"><a href="#提要" class="headerlink" title="提要"></a>提要</h2><ul>
+<li>MC 1.18.2</li>
+<li>Create 0.5.0d</li>
+</ul>
+<p>被装配在移动结构上的钻头工作到一般半通过特殊手段移动（譬如，装配进矿车再放下来）之后会保留原来的工作状态，这意味着他可以隔空破坏方块。</p>
+<h2 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.simibubi.create.content.contraptions.components.actors;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BlockBreakingMovementBehaviour</span> <span class="keyword">implements</span> <span class="title class_">MovementBehaviour</span>;</span><br></pre></td></tr></table></figure>
+
+<p>此类的方法 <code>tickBreaker</code>:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">tickBreaker</span><span class="params">(MovementContext context)</span>; <span class="comment">// line 143</span></span><br></pre></td></tr></table></figure>
+
+<p>在每一个 <code>process</code> 中并不会检查被破坏的方块的位置 <code>breakingPos</code> 和移动结构中 <code>breaker</code> 的距离，从而执行破坏动作可以是隔空的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BlockHelper.destroyBlock(context.world, breakingPos, <span class="number">1f</span>, stack -&gt; <span class="built_in">this</span>.dropItem(context, stack)); <span class="comment">// line 200</span></span><br></pre></td></tr></table></figure>
+
+<p>这里 <code>dropItem</code> 会判断是否存入 <code>contraption</code> 的空间，空间满的时候的行为等等，这里不再展开，总之默认掉落物会吸入在移动结构的容器中，满时则丢出。</p>
+<p>我们知道，移动结构是通过维护一个 nbt 标签树来实现的，而装配的矿车被扳手右键取下时不会改变 nbt 标签：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.simibubi.create.content.contraptions.components.structureMovement.mounted;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MinecartContraptionItem</span> <span class="keyword">extends</span> <span class="title class_">Item</span>;</span><br></pre></td></tr></table></figure>
+
+<p>中监听交互事件的函数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SubscribeEvent</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">wrenchCanBeUsedToPickUpMinecartContraptions</span><span class="params">(PlayerInteractEvent.EntityInteract event)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>不会尝试检测工作方块的状态，仅仅只会检查 <code>ContraptionMovementSetting.isNoPickup</code> 等等然后将矿车连同移动结构的数据序列化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// line 235-259</span></span><br><span class="line"><span class="type">ItemStack</span> <span class="variable">generatedStack</span> <span class="operator">=</span> create(type, contraption).setHoverName(entity.getCustomName());</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="type">ByteArrayDataOutput</span> <span class="variable">dataOutput</span> <span class="operator">=</span> ByteStreams.newDataOutput();</span><br><span class="line">  NbtIo.write(generatedStack.serializeNBT(), dataOutput);</span><br><span class="line">  <span class="type">int</span> <span class="variable">estimatedPacketSize</span> <span class="operator">=</span> dataOutput.toByteArray().length;</span><br><span class="line">  <span class="keyword">if</span> (estimatedPacketSize &gt; <span class="number">2_000_000</span>) &#123;</span><br><span class="line">    player.displayClientMessage(Lang.translateDirect(<span class="string">&quot;contraption.minecart_contraption_too_big&quot;</span>)</span><br><span class="line">      .withStyle(ChatFormatting.RED), <span class="literal">true</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">  e.printStackTrace();</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (contraption.getContraption()</span><br><span class="line">  .getBlocks()</span><br><span class="line">  .size() &gt; <span class="number">200</span>)</span><br><span class="line">  AllAdvancements.CART_PICKUP.awardTo(player);</span><br><span class="line">    </span><br><span class="line">  player.getInventory().placeItemBackInInventory(generatedStack);</span><br><span class="line">  contraption.discard();</span><br><span class="line">  entity.discard();</span><br></pre></td></tr></table></figure>
+
+<p>类似的反序列代码也不会检查，不再赘述。</p>
+<h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><ul>
+<li>在交互时间中取消 <code>contraption</code> 内工作构建的一切行为；</li>
+<li>在 <code>tickBreaker</code> 的时候额外检查 <code>breakingPos</code>。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rungecc.github.io/2022/09/14/create-remote-drill-bug/" data-id="cl80g698900011yfmeywz0ekm" data-title="机械动力远程钻头" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Create/" rel="tag">Create</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Minecraft/" rel="tag">Minecraft</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-lua-lang" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/09/13/lua-lang/" class="article-date">
@@ -234,7 +302,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/13/lua-lang/" data-id="cl80bgtg70003zdfm91mr2wc6" data-title="lua 语言" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/13/lua-lang/" data-id="cl80g698c00041yfmdcqnfaec" data-title="lua 语言" class="article-share-link">Share</a>
       
       
       
@@ -314,7 +382,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/12/cpp23/" data-id="cl80bgtg20000zdfmanxshkhp" data-title="C++ 23" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/12/cpp23/" data-id="cl80g698700001yfm85df4je7" data-title="C++ 23" class="article-share-link">Share</a>
       
       
       
@@ -344,7 +412,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/12/index/" data-id="cl80bgtg50001zdfm69bp0bkn" data-title="" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/12/index/" data-id="cl80g698b00031yfmdur9d62m" data-title="" class="article-share-link">Share</a>
       
       
       
@@ -369,7 +437,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Create/" rel="tag">Create</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Minecraft/" rel="tag">Minecraft</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a></li></ul>
     </div>
   </div>
 
@@ -379,7 +447,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C/" style="font-size: 10px;">C++</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a>
+      <a href="/tags/C/" style="font-size: 10px;">C++</a> <a href="/tags/Create/" style="font-size: 10px;">Create</a> <a href="/tags/Minecraft/" style="font-size: 10px;">Minecraft</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a>
     </div>
   </div>
 
@@ -399,6 +467,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/09/14/create-remote-drill-bug/">机械动力远程钻头</a>
+          </li>
         
           <li>
             <a href="/2022/09/13/lua-lang/">lua 语言</a>
