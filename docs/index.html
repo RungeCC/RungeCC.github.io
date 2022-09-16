@@ -71,6 +71,55 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-create-cauldron-bug" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/09/16/create-cauldron-bug/" class="article-date">
+  <time class="dt-published" datetime="2022-09-16T10:05:04.000Z" itemprop="datePublished">2022-09-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/09/16/create-cauldron-bug/">炼药锅 bug</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="提要"><a href="#提要" class="headerlink" title="提要"></a>提要</h2><ul>
+<li><a href="mailto:&#x4d;&#x43;&#64;&#49;&#x2e;&#49;&#56;&#x2e;&#x32;">&#x4d;&#x43;&#64;&#49;&#x2e;&#49;&#56;&#x2e;&#x32;</a></li>
+<li><a href="mailto:&#x43;&#x72;&#101;&#97;&#116;&#101;&#64;&#48;&#x2e;&#53;&#x2e;&#48;&#x64;">&#x43;&#x72;&#101;&#97;&#116;&#101;&#64;&#48;&#x2e;&#53;&#x2e;&#48;&#x64;</a></li>
+</ul>
+<p>蓝图工具选中的非空的炼药锅会保存状态（例如，熔岩炼药锅），然后用任何炼药锅打印出来时会保留熔岩。</p>
+<h2 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.simibubi.create.foundation.utility;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BlockHelper</span> &#123;</span><br><span class="line">  <span class="comment">// line 216</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">placeSchematicBlock</span><span class="params">(Level world, BlockState state,</span></span><br><span class="line"><span class="params">    BlockPos target, ItemStack stack, <span class="meta">@Nullable</span> CompoundTag data)</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>此函数没有检查&#x2F;转换炼药锅的状态。</p>
+<h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (state.is(BlockTags.CAULDRONS))</span><br><span class="line">	state = Blocks.CAULDRON.defaultBlockState();</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rungecc.github.io/2022/09/16/create-cauldron-bug/" data-id="cl84byrdm00017bfme0msdq58" data-title="炼药锅 bug" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Create/" rel="tag">Create</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Minecraft/" rel="tag">Minecraft</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-create-remote-drill-bug" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/09/14/create-remote-drill-bug/" class="article-date">
@@ -125,7 +174,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/14/create-remote-drill-bug/" data-id="cl80g698900011yfmeywz0ekm" data-title="机械动力远程钻头" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/14/create-remote-drill-bug/" data-id="cl84byrdo00037bfm70c08x86" data-title="机械动力远程钻头" class="article-share-link">Share</a>
       
       
       
@@ -302,7 +351,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/13/lua-lang/" data-id="cl80g698c00041yfmdcqnfaec" data-title="lua 语言" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/13/lua-lang/" data-id="cl84byrdp00057bfm9cz99eju" data-title="lua 语言" class="article-share-link">Share</a>
       
       
       
@@ -382,7 +431,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/12/cpp23/" data-id="cl80g698700001yfm85df4je7" data-title="C++ 23" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/12/cpp23/" data-id="cl84byrdj00007bfmd0cf84k8" data-title="C++ 23" class="article-share-link">Share</a>
       
       
       
@@ -412,7 +461,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/12/index/" data-id="cl80g698b00031yfmdur9d62m" data-title="" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/12/index/" data-id="cl84byrdp00047bfm64qqerpl" data-title="" class="article-share-link">Share</a>
       
       
       
@@ -447,7 +496,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C/" style="font-size: 10px;">C++</a> <a href="/tags/Create/" style="font-size: 10px;">Create</a> <a href="/tags/Minecraft/" style="font-size: 10px;">Minecraft</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a>
+      <a href="/tags/C/" style="font-size: 10px;">C++</a> <a href="/tags/Create/" style="font-size: 20px;">Create</a> <a href="/tags/Minecraft/" style="font-size: 20px;">Minecraft</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a>
     </div>
   </div>
 
@@ -467,6 +516,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/09/16/create-cauldron-bug/">炼药锅 bug</a>
+          </li>
         
           <li>
             <a href="/2022/09/14/create-remote-drill-bug/">机械动力远程钻头</a>

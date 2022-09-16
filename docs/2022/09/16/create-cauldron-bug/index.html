@@ -4,16 +4,20 @@
   <meta charset="utf-8">
   
   
-  <title>Runge&#39;s Notes</title>
+  <title>炼药锅 bug | Runge&#39;s Notes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="article">
-<meta property="og:title" content="Runge&#39;s Notes">
-<meta property="og:url" content="http://rungecc.github.io/2022/09/12/index/index.html">
+  <meta name="description" content="提要 &amp;#x4d;&amp;#x43;&amp;#64;&amp;#49;&amp;#x2e;&amp;#49;&amp;#56;&amp;#x2e;&amp;#x32; &amp;#x43;&amp;#x72;&amp;#101;&amp;#97;&amp;#116;&amp;#101;&amp;#64;&amp;#48;&amp;#x2e;&amp;#53;&amp;#x2e;&amp;#48;&amp;#x64;  蓝图工具选中的非空的炼药锅会保存状态（例如，熔岩炼药锅），然后用任何炼药锅打印出来时会保留熔岩。 解释1234567package com.s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="炼药锅 bug">
+<meta property="og:url" content="http://rungecc.github.io/2022/09/16/create-cauldron-bug/index.html">
 <meta property="og:site_name" content="Runge&#39;s Notes">
+<meta property="og:description" content="提要 &amp;#x4d;&amp;#x43;&amp;#64;&amp;#49;&amp;#x2e;&amp;#49;&amp;#56;&amp;#x2e;&amp;#x32; &amp;#x43;&amp;#x72;&amp;#101;&amp;#97;&amp;#116;&amp;#101;&amp;#64;&amp;#48;&amp;#x2e;&amp;#53;&amp;#x2e;&amp;#48;&amp;#x64;  蓝图工具选中的非空的炼药锅会保存状态（例如，熔岩炼药锅），然后用任何炼药锅打印出来时会保留熔岩。 解释1234567package com.s">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-09-12T11:42:10.855Z">
-<meta property="article:modified_time" content="2022-09-12T11:42:10.855Z">
+<meta property="article:published_time" content="2022-09-16T10:05:04.000Z">
+<meta property="article:modified_time" content="2022-09-16T10:20:53.853Z">
 <meta property="article:author" content="Runge">
+<meta property="article:tag" content="Minecraft">
+<meta property="article:tag" content="Create">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Runge's Notes" type="application/atom+xml">
@@ -71,41 +75,58 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-index" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-create-cauldron-bug" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/2022/09/12/index/" class="article-date">
-  <time class="dt-published" datetime="2022-09-12T11:42:10.855Z" itemprop="datePublished">2022-09-12</time>
+    <a href="/2022/09/16/create-cauldron-bug/" class="article-date">
+  <time class="dt-published" datetime="2022-09-16T10:05:04.000Z" itemprop="datePublished">2022-09-16</time>
 </a>
     
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      炼药锅 bug
+    </h1>
+  
+
+      </header>
+    
     <div class="e-content article-entry" itemprop="articleBody">
       
-        
+        <h2 id="提要"><a href="#提要" class="headerlink" title="提要"></a>提要</h2><ul>
+<li><a href="mailto:&#x4d;&#x43;&#64;&#49;&#x2e;&#49;&#56;&#x2e;&#x32;">&#x4d;&#x43;&#64;&#49;&#x2e;&#49;&#56;&#x2e;&#x32;</a></li>
+<li><a href="mailto:&#x43;&#x72;&#101;&#97;&#116;&#101;&#64;&#48;&#x2e;&#53;&#x2e;&#48;&#x64;">&#x43;&#x72;&#101;&#97;&#116;&#101;&#64;&#48;&#x2e;&#53;&#x2e;&#48;&#x64;</a></li>
+</ul>
+<p>蓝图工具选中的非空的炼药锅会保存状态（例如，熔岩炼药锅），然后用任何炼药锅打印出来时会保留熔岩。</p>
+<h2 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.simibubi.create.foundation.utility;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BlockHelper</span> &#123;</span><br><span class="line">  <span class="comment">// line 216</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">placeSchematicBlock</span><span class="params">(Level world, BlockState state,</span></span><br><span class="line"><span class="params">    BlockPos target, ItemStack stack, <span class="meta">@Nullable</span> CompoundTag data)</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>此函数没有检查&#x2F;转换炼药锅的状态。</p>
+<h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (state.is(BlockTags.CAULDRONS))</span><br><span class="line">	state = Blocks.CAULDRON.defaultBlockState();</span><br></pre></td></tr></table></figure>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/12/index/" data-id="cl84byrdp00047bfm64qqerpl" data-title="" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/16/create-cauldron-bug/" data-id="cl84byrdm00017bfme0msdq58" data-title="炼药锅 bug" class="article-share-link">Share</a>
       
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Create/" rel="tag">Create</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Minecraft/" rel="tag">Minecraft</a></li></ul>
+
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2022/09/12/cpp23/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          C++ 23
-        
-      </div>
-    </a>
   
+    <a href="/2022/09/14/create-remote-drill-bug/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">机械动力远程钻头</div>
+    </a>
   
 </nav>
 
