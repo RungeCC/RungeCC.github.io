@@ -87,3 +87,11 @@ if (contraption.getContraption()
 
 - 在交互时间中取消 `contraption` 内工作构建的一切行为；
 - 在 `tickBreaker` 的时候额外检查 `breakingPos`。
+  
+  ```diff
+  - if (!canBreak(world, breakingPos, stateToBreak)) {
+  + Vec3 currentPosition = context.position;
+  + double distance = breakingPos.distToCenterSqr(currentPosition);
+  +
+  + if (!canBreak(world, breakingPos, stateToBreak) || distance > 1) {
+  ```

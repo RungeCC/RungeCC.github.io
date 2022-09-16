@@ -31,5 +31,5 @@ public class BlockHelper {
 
 ```java
 if (state.is(BlockTags.CAULDRONS))
-	state = Blocks.CAULDRON.defaultBlockState();
+  state = Blocks.CAULDRON.defaultBlockState();
 ```

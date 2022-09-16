@@ -94,19 +94,19 @@
     <div class="e-content article-entry" itemprop="articleBody">
       
         <h2 id="提要"><a href="#提要" class="headerlink" title="提要"></a>提要</h2><ul>
-<li><a href="mailto:&#x4d;&#x43;&#64;&#49;&#x2e;&#49;&#56;&#x2e;&#x32;">&#x4d;&#x43;&#64;&#49;&#x2e;&#49;&#56;&#x2e;&#x32;</a></li>
-<li><a href="mailto:&#x43;&#x72;&#101;&#97;&#116;&#101;&#64;&#48;&#x2e;&#53;&#x2e;&#48;&#x64;">&#x43;&#x72;&#101;&#97;&#116;&#101;&#64;&#48;&#x2e;&#53;&#x2e;&#48;&#x64;</a></li>
+<li><a href="mailto:&#x4d;&#x43;&#x40;&#x31;&#46;&#49;&#56;&#x2e;&#x32;">&#x4d;&#x43;&#x40;&#x31;&#46;&#49;&#56;&#x2e;&#x32;</a></li>
+<li><a href="mailto:&#67;&#114;&#101;&#x61;&#x74;&#101;&#x40;&#48;&#46;&#53;&#x2e;&#48;&#100;">&#67;&#114;&#101;&#x61;&#x74;&#101;&#x40;&#48;&#46;&#53;&#x2e;&#48;&#100;</a></li>
 </ul>
 <p>蓝图工具选中的非空的炼药锅会保存状态（例如，熔岩炼药锅），然后用任何炼药锅打印出来时会保留熔岩。</p>
 <h2 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.simibubi.create.foundation.utility;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BlockHelper</span> &#123;</span><br><span class="line">  <span class="comment">// line 216</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">placeSchematicBlock</span><span class="params">(Level world, BlockState state,</span></span><br><span class="line"><span class="params">    BlockPos target, ItemStack stack, <span class="meta">@Nullable</span> CompoundTag data)</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
 <p>此函数没有检查&#x2F;转换炼药锅的状态。</p>
-<h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (state.is(BlockTags.CAULDRONS))</span><br><span class="line">	state = Blocks.CAULDRON.defaultBlockState();</span><br></pre></td></tr></table></figure>
+<h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (state.is(BlockTags.CAULDRONS))</span><br><span class="line">  state = Blocks.CAULDRON.defaultBlockState();</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/16/create-cauldron-bug/" data-id="cl84byrdm00017bfme0msdq58" data-title="炼药锅 bug" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/16/create-cauldron-bug/" data-id="cl84c4tqt0001f6fm3dl2e4on" data-title="炼药锅 bug" class="article-share-link">Share</a>
       
       
       
@@ -167,14 +167,16 @@
 
 <p>类似的反序列代码也不会检查，不再赘述。</p>
 <h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><ul>
-<li>在交互时间中取消 <code>contraption</code> 内工作构建的一切行为；</li>
-<li>在 <code>tickBreaker</code> 的时候额外检查 <code>breakingPos</code>。</li>
+<li><p>在交互时间中取消 <code>contraption</code> 内工作构建的一切行为；</p>
+</li>
+<li><p>在 <code>tickBreaker</code> 的时候额外检查 <code>breakingPos</code>。</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="deletion">- if (!canBreak(world, breakingPos, stateToBreak)) &#123;</span></span><br><span class="line"><span class="addition">+ Vec3 currentPosition = context.position;</span></span><br><span class="line"><span class="addition">+ double distance = breakingPos.distToCenterSqr(currentPosition);</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+ if (!canBreak(world, breakingPos, stateToBreak) || distance &gt; 1) &#123;</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/14/create-remote-drill-bug/" data-id="cl84byrdo00037bfm70c08x86" data-title="机械动力远程钻头" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/14/create-remote-drill-bug/" data-id="cl84c4tqu0003f6fme44xhdqu" data-title="机械动力远程钻头" class="article-share-link">Share</a>
       
       
       
@@ -351,7 +353,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/13/lua-lang/" data-id="cl84byrdp00057bfm9cz99eju" data-title="lua 语言" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/13/lua-lang/" data-id="cl84c4tqw0005f6fm7p5a524k" data-title="lua 语言" class="article-share-link">Share</a>
       
       
       
@@ -431,7 +433,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/12/cpp23/" data-id="cl84byrdj00007bfmd0cf84k8" data-title="C++ 23" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/12/cpp23/" data-id="cl84c4tqq0000f6fm4if96o3p" data-title="C++ 23" class="article-share-link">Share</a>
       
       
       
@@ -461,7 +463,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/12/index/" data-id="cl84byrdp00047bfm64qqerpl" data-title="" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/12/index/" data-id="cl84c4tqv0004f6fm0brd8ini" data-title="" class="article-share-link">Share</a>
       
       
       

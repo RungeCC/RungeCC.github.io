@@ -14,7 +14,7 @@
 <meta property="og:description" content="提要 MC 1.18.2 Create 0.5.0d  被装配在移动结构上的钻头工作到一般半通过特殊手段移动（譬如，装配进矿车再放下来）之后会保留原来的工作状态，这意味着他可以隔空破坏方块。 解释123package com.simibubi.create.content.contraptions.components.actors;public class BlockBreakingMoveme">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-09-13T16:20:40.000Z">
-<meta property="article:modified_time" content="2022-09-13T17:07:39.232Z">
+<meta property="article:modified_time" content="2022-09-16T10:24:38.537Z">
 <meta property="article:author" content="Runge">
 <meta property="article:tag" content="Minecraft">
 <meta property="article:tag" content="Create">
@@ -122,14 +122,16 @@
 
 <p>类似的反序列代码也不会检查，不再赘述。</p>
 <h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><ul>
-<li>在交互时间中取消 <code>contraption</code> 内工作构建的一切行为；</li>
-<li>在 <code>tickBreaker</code> 的时候额外检查 <code>breakingPos</code>。</li>
+<li><p>在交互时间中取消 <code>contraption</code> 内工作构建的一切行为；</p>
+</li>
+<li><p>在 <code>tickBreaker</code> 的时候额外检查 <code>breakingPos</code>。</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="deletion">- if (!canBreak(world, breakingPos, stateToBreak)) &#123;</span></span><br><span class="line"><span class="addition">+ Vec3 currentPosition = context.position;</span></span><br><span class="line"><span class="addition">+ double distance = breakingPos.distToCenterSqr(currentPosition);</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+ if (!canBreak(world, breakingPos, stateToBreak) || distance &gt; 1) &#123;</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/14/create-remote-drill-bug/" data-id="cl84byrdo00037bfm70c08x86" data-title="机械动力远程钻头" class="article-share-link">Share</a>
+      <a data-url="http://rungecc.github.io/2022/09/14/create-remote-drill-bug/" data-id="cl84c4tqu0003f6fme44xhdqu" data-title="机械动力远程钻头" class="article-share-link">Share</a>
       
       
       
