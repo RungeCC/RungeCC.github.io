@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>C++ 标准库缺陷：optional | Runge&#39;s Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="HistoryC++17 引入了 std::optional(看起来是来自 boost::hana::optional) 用来表示可能持有值的类型，相当于 Maybe(haskell) 或者是 Optional(java)。但是当时这个类并不非常好用，因为 api 设计的种种问题，很多时候不得不写这样的代码： 12345if (a.has_value()) &amp;#123;  b &#x3D; do_somet">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 标准库缺陷：optional">
+<meta property="og:url" content="http://rungecc.github.io/2022/09/21/cxxsl-fault-optional/index.html">
+<meta property="og:site_name" content="Runge&#39;s Notes">
+<meta property="og:description" content="HistoryC++17 引入了 std::optional(看起来是来自 boost::hana::optional) 用来表示可能持有值的类型，相当于 Maybe(haskell) 或者是 Optional(java)。但是当时这个类并不非常好用，因为 api 设计的种种问题，很多时候不得不写这样的代码： 12345if (a.has_value()) &amp;#123;  b &#x3D; do_somet">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-09-20T16:24:22.000Z">
+<meta property="article:modified_time" content="2022-09-20T17:46:39.786Z">
+<meta property="article:author" content="Runge">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Runge's Notes" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Runge&#39;s Notes</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://RungeCC.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-cxxsl-fault-optional" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/09/21/cxxsl-fault-optional/" class="article-date">
+  <time class="dt-published" datetime="2022-09-20T16:24:22.000Z" itemprop="datePublished">2022-09-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      C++ 标准库缺陷：optional
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="History"><a href="#History" class="headerlink" title="History"></a>History</h2><p>C++17 引入了 <code>std::optional</code>(看起来是来自 <code>boost::hana::optional</code>) 用来表示可能持有值的类型，相当于 <code>Maybe</code>(haskell) 或者是 <code>Optional</code>(java)。但是当时这个类并不非常好用，因为 api 设计的种种问题，很多时候不得不写这样的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (a.<span class="built_in">has_value</span>()) &#123;</span><br><span class="line">  b = <span class="built_in">do_something</span>(a.<span class="built_in">value</span>())</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  b = <span class="literal">nullopt</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这自然是十分讨厌的，于是 C++23 委员会加入了如下的 monadic 特性：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Self</span>, <span class="keyword">class</span> <span class="title class_">Func</span>&gt;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> std::optional&lt;T&gt;::<span class="built_in">and_then</span>(<span class="keyword">this</span> Self&amp;&amp; self, Func&amp;&amp; func);</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Self</span>, <span class="keyword">class</span> <span class="title class_">Func</span>&gt;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> std::optional&lt;T&gt;::<span class="built_in">transform</span>(<span class="keyword">this</span> Self&amp;&amp; self, Func&amp;&amp; func);</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Self</span>, <span class="keyword">class</span> <span class="title class_">Func</span>&gt;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> std::optional&lt;T&gt;::<span class="built_in">or_else</span>(<span class="keyword">this</span> Self&amp;&amp; self, Func&amp;&amp; func);</span><br></pre></td></tr></table></figure>
+
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>但是 <code>and_then</code> 和 <code>transform</code> 存在一些设计上的问题，我们知道，函数有如下签名：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SomeType <span class="title">f</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>一般来说，<code>SomeType</code> 绝不会是不完整类型，除了一种例外，有 cv 限定的 <code>void</code>，对于这种情况，大部分函数有关的类型都会谨慎处理。</p>
+<p>很可惜，在 <code>std::optional</code> 上面并没有，我们不可能有 <code>std::optional&lt;void&gt;</code>，因为类型参数有引用的约束不满足，这显然是标准库的过失。</p>
+<h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><ul>
+<li>特化 <code>std::optional&lt;void&gt;</code>，<code>has_value</code> 恒定为假。</li>
+<li>添加函数 <code>std::optional&lt;T&gt;::for_each</code>，就像算法库那样。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rungecc.github.io/2022/09/21/cxxsl-fault-optional/" data-id="cl8aho02d0000bvfme4il87t0" data-title="C++ 标准库缺陷：optional" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/09/19/progress-and-its-problems/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">拉里劳丹：进步及其问题</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Create/" rel="tag">Create</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Laudan/" rel="tag">Laudan</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Minecraft/" rel="tag">Minecraft</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Scientific-Philosophy/" rel="tag">Scientific Philosophy</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 20px;">C++</a> <a href="/tags/Create/" style="font-size: 20px;">Create</a> <a href="/tags/Laudan/" style="font-size: 10px;">Laudan</a> <a href="/tags/Minecraft/" style="font-size: 20px;">Minecraft</a> <a href="/tags/Scientific-Philosophy/" style="font-size: 10px;">Scientific Philosophy</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">September 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/09/21/cxxsl-fault-optional/">C++ 标准库缺陷：optional</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/19/progress-and-its-problems/">拉里劳丹：进步及其问题</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/16/create-cauldron-bug/">炼药锅 bug</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/14/create-remote-drill-bug/">机械动力远程钻头</a>
+          </li>
+        
+          <li>
+            <a href="/2022/09/13/lua-lang/">lua 语言</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2022 Runge<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

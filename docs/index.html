@@ -71,6 +71,61 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cxxsl-fault-optional" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/09/21/cxxsl-fault-optional/" class="article-date">
+  <time class="dt-published" datetime="2022-09-20T16:24:22.000Z" itemprop="datePublished">2022-09-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2022/09/21/cxxsl-fault-optional/">C++ 标准库缺陷：optional</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="History"><a href="#History" class="headerlink" title="History"></a>History</h2><p>C++17 引入了 <code>std::optional</code>(看起来是来自 <code>boost::hana::optional</code>) 用来表示可能持有值的类型，相当于 <code>Maybe</code>(haskell) 或者是 <code>Optional</code>(java)。但是当时这个类并不非常好用，因为 api 设计的种种问题，很多时候不得不写这样的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (a.<span class="built_in">has_value</span>()) &#123;</span><br><span class="line">  b = <span class="built_in">do_something</span>(a.<span class="built_in">value</span>())</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  b = <span class="literal">nullopt</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这自然是十分讨厌的，于是 C++23 委员会加入了如下的 monadic 特性：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Self</span>, <span class="keyword">class</span> <span class="title class_">Func</span>&gt;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> std::optional&lt;T&gt;::<span class="built_in">and_then</span>(<span class="keyword">this</span> Self&amp;&amp; self, Func&amp;&amp; func);</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Self</span>, <span class="keyword">class</span> <span class="title class_">Func</span>&gt;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> std::optional&lt;T&gt;::<span class="built_in">transform</span>(<span class="keyword">this</span> Self&amp;&amp; self, Func&amp;&amp; func);</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Self</span>, <span class="keyword">class</span> <span class="title class_">Func</span>&gt;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> std::optional&lt;T&gt;::<span class="built_in">or_else</span>(<span class="keyword">this</span> Self&amp;&amp; self, Func&amp;&amp; func);</span><br></pre></td></tr></table></figure>
+
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>但是 <code>and_then</code> 和 <code>transform</code> 存在一些设计上的问题，我们知道，函数有如下签名：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">SomeType <span class="title">f</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>一般来说，<code>SomeType</code> 绝不会是不完整类型，除了一种例外，有 cv 限定的 <code>void</code>，对于这种情况，大部分函数有关的类型都会谨慎处理。</p>
+<p>很可惜，在 <code>std::optional</code> 上面并没有，我们不可能有 <code>std::optional&lt;void&gt;</code>，因为类型参数有引用的约束不满足，这显然是标准库的过失。</p>
+<h2 id="fix"><a href="#fix" class="headerlink" title="fix"></a>fix</h2><ul>
+<li>特化 <code>std::optional&lt;void&gt;</code>，<code>has_value</code> 恒定为假。</li>
+<li>添加函数 <code>std::optional&lt;T&gt;::for_each</code>，就像算法库那样。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://rungecc.github.io/2022/09/21/cxxsl-fault-optional/" data-id="cl8aho02d0000bvfme4il87t0" data-title="C++ 标准库缺陷：optional" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/" rel="tag">C++</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-progress-and-its-problems" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/09/19/progress-and-its-problems/" class="article-date">
@@ -289,83 +344,6 @@
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Laudan/" rel="tag">Laudan</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Scientific-Philosophy/" rel="tag">Scientific Philosophy</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-create-deployer-recipes" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/09/18/create-deployer-recipes/" class="article-date">
-  <time class="dt-published" datetime="2022-09-18T10:01:59.000Z" itemprop="datePublished">2022-09-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/09/18/create-deployer-recipes/">机械动力机械手合成配方的代码分析</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="基本类"><a href="#基本类" class="headerlink" title="基本类"></a>基本类</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.simibubi.create.content.contraption.components.deployer;</span><br></pre></td></tr></table></figure>
-
-<p>这个包提供了 <code>deployer</code> 的所有必要类，其中类：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeployerTileEntity</span> <span class="keyword">extends</span> <span class="title class_">KineticTileEntity</span>;</span><br></pre></td></tr></table></figure>
-
-<p>是机械手的方块实体，而：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeployerBlock</span> <span class="keyword">extends</span> <span class="title class_">DirectionalAxisKineticBlock</span> <span class="keyword">implements</span> <span class="title class_">ITE</span>&lt;DeployerTileEntity&gt;;</span><br></pre></td></tr></table></figure>
-
-<p>是机械手的方块类，而：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeployerRenderer</span> <span class="keyword">extends</span> <span class="title class_">SafeTileEntityRenderer</span>&lt;DeployerTileEntity&gt;</span><br></pre></td></tr></table></figure>
-
-<p>是机械手的渲染类。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeployerInstance</span> <span class="keyword">extends</span> <span class="title class_">ShaftInstance</span> <span class="keyword">implements</span> <span class="title class_">DynamicInstance</span>, TickableInstance;</span><br></pre></td></tr></table></figure>
-
-<p>是机械手的实例类。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeployerMovementBehaviour</span> <span class="keyword">implements</span> <span class="title class_">MovementBehaviour</span>;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DeployerMovingInteraction</span> <span class="keyword">extends</span> <span class="title class_">MovingInteractionBehaviour</span>;</span><br></pre></td></tr></table></figure>
-
-<p>分别是机械手的移动行为类和移动交互类。</p>
-<p>所有这些通过 <code>AllTileEntities.java</code> 和 <code>AllBlocks.java</code> 中如下代码关联：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> BlockEntityEntry&lt;DeployerTileEntity&gt; DEPLOYER = Create.registrate()</span><br><span class="line">    .tileEntity(<span class="string">&quot;deployer&quot;</span>, DeployerTileEntity::<span class="keyword">new</span>)</span><br><span class="line">    .instance(() -&gt; DeployerInstance::<span class="keyword">new</span>)</span><br><span class="line">    .validBlocks(AllBlocks.DEPLOYER)</span><br><span class="line">    .renderer(() -&gt; DeployerRenderer::<span class="keyword">new</span>)</span><br><span class="line">    .register();</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> BlockEntry&lt;DeployerBlock&gt; DEPLOYER = REGISTRATE.block(<span class="string">&quot;deployer&quot;</span>, DeployerBlock::<span class="keyword">new</span>)</span><br><span class="line">    .initialProperties(SharedProperties::stone)</span><br><span class="line">    .properties(p -&gt; p.color(MaterialColor.PODZOL))</span><br><span class="line">    .transform(axeOrPickaxe())</span><br><span class="line">    .blockstate(BlockStateGen.directionalAxisBlockProvider())</span><br><span class="line">    .transform(BlockStressDefaults.setImpact(<span class="number">4.0</span>))</span><br><span class="line">    .onRegister(movementBehaviour(<span class="keyword">new</span> <span class="title class_">DeployerMovementBehaviour</span>()))</span><br><span class="line">    .onRegister(interactionBehaviour(<span class="keyword">new</span> <span class="title class_">DeployerMovingInteraction</span>()))</span><br><span class="line">    .item(AssemblyOperatorBlockItem::<span class="keyword">new</span>)</span><br><span class="line">    .transform(customItemModel())</span><br><span class="line">    .register();</span><br></pre></td></tr></table></figure>
-
-<h2 id="方块实体类"><a href="#方块实体类" class="headerlink" title="方块实体类"></a>方块实体类</h2><h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><p>方块实体类本类具有如下属性：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> State state;</span><br><span class="line"><span class="keyword">protected</span> Mode mode;</span><br><span class="line"><span class="comment">// 所持物品</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">ItemStack</span> <span class="variable">heldItem</span> <span class="operator">=</span> ItemStack.EMPTY;</span><br><span class="line"><span class="comment">// 模拟交互的虚拟玩家</span></span><br><span class="line"><span class="keyword">protected</span> DeployerFakePlayer player;</span><br><span class="line"><span class="comment">// 内部计时器，用于控制工作循环</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">int</span> timer;</span><br><span class="line"><span class="keyword">protected</span> <span class="type">float</span> reach;</span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> <span class="variable">fistBump</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"><span class="comment">// 用于存储溢出物品</span></span><br><span class="line"><span class="keyword">protected</span> List&lt;ItemStack&gt; overflowItems = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"><span class="keyword">protected</span> FilteringBehaviour filtering;</span><br><span class="line"><span class="comment">// 标志是否被红石信号锁定</span></span><br><span class="line"><span class="keyword">protected</span> <span class="type">boolean</span> redstoneLocked;</span><br><span class="line"><span class="keyword">private</span> LazyOptional&lt;IItemHandlerModifiable&gt; invHandler;</span><br><span class="line"><span class="keyword">private</span> ListTag deferredInventoryList;</span><br><span class="line"><span class="keyword">private</span> LerpedFloat animatedOffset;</span><br><span class="line"><span class="keyword">public</span> BeltProcessingBehaviour processingBehaviour;</span><br></pre></td></tr></table></figure>
-
-<p>还有来自父类的属性，但这里并不重要。</p>
-<p>其中 <code>State</code> 是表示状态的内部枚举类：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">State</span> &#123;WAITING, EXPANDING, RETRACTING, DUMPING&#125;;</span><br></pre></td></tr></table></figure>
-
-<p><code>Mode</code> 是表示工作模式的内部枚举类：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">Mode</span> &#123;PUNCH, USE&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>所有 <code>Behaviour</code> 类都派生自 <code>TileEntitiesBehaviour</code> 类</p>
-<h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><p><code>public void addBehaviours(List&lt;TileEntityBehaviour&gt; behaviours)</code></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://rungecc.github.io/2022/09/18/create-deployer-recipes/" data-id="cl87663n50000cufmcoex9z97" data-title="机械动力机械手合成配方的代码分析" class="article-share-link">Share</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Create/" rel="tag">Create</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Minecraft/" rel="tag">Minecraft</a></li></ul>
 
     </footer>
   </div>
@@ -774,7 +752,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C/" style="font-size: 10px;">C++</a> <a href="/tags/Create/" style="font-size: 20px;">Create</a> <a href="/tags/Laudan/" style="font-size: 10px;">Laudan</a> <a href="/tags/Minecraft/" style="font-size: 20px;">Minecraft</a> <a href="/tags/Scientific-Philosophy/" style="font-size: 10px;">Scientific Philosophy</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a>
+      <a href="/tags/C/" style="font-size: 20px;">C++</a> <a href="/tags/Create/" style="font-size: 20px;">Create</a> <a href="/tags/Laudan/" style="font-size: 10px;">Laudan</a> <a href="/tags/Minecraft/" style="font-size: 20px;">Minecraft</a> <a href="/tags/Scientific-Philosophy/" style="font-size: 10px;">Scientific Philosophy</a> <a href="/tags/lua/" style="font-size: 10px;">lua</a>
     </div>
   </div>
 
@@ -796,11 +774,11 @@
       <ul>
         
           <li>
-            <a href="/2022/09/19/progress-and-its-problems/">拉里劳丹：进步及其问题</a>
+            <a href="/2022/09/21/cxxsl-fault-optional/">C++ 标准库缺陷：optional</a>
           </li>
         
           <li>
-            <a href="/2022/09/18/create-deployer-recipes/">机械动力机械手合成配方的代码分析</a>
+            <a href="/2022/09/19/progress-and-its-problems/">拉里劳丹：进步及其问题</a>
           </li>
         
           <li>
