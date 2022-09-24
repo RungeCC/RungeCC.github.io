@@ -85,6 +85,21 @@ changeIndex2[tensor_?tensorQ, metric_?tensorQ,
     ]
   ]
 ```
-----
-**未完待续**
+
+## 抽象
+
+我们现在希望将我们的 Tensor 封装一下，打包上指标一类的信息，这样方便我们调用，为此我们使用 Mathematica 的 OOP 技术(我也不是很清楚这是不是能叫做 OOP)来完成。
+
+```wl
+abstractTensorObject[data: _?tensorQ]; (*object*)
+
+abstractTensorObject[___][_[___]] := $Failed; (*member function call*)
+abstractTensorObject[data_]@"rank"[] := TensorRank[arr];
+abstractTensorObject[data_]@"dim"[] := tensorDim[arr];
+abstractTensorObject[data_]@"data"[] := data;
+abstractTensorObject[data_]@"changeIndex"[
+  change:Rule[init: {(Up|Down) ...}, fin: {(Up|Down|$) ...}],
+  "Metric"->metric:_?metricQ:$Metric
+]
+```
 
